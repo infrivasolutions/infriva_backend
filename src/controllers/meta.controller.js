@@ -37,6 +37,12 @@ export const receiveMetaLead = async (req, res) => {
         );
 
         const metaData = await metaRes.json();
+
+        if (!metaRes.ok || metaData.error) {
+          console.log("Meta Lead Fetch Error:", metaData);
+          continue;
+        }
+
         const fields = metaData.field_data || [];
 
         const getField = (name) =>
@@ -53,25 +59,21 @@ export const receiveMetaLead = async (req, res) => {
 
         const email = getField("email");
 
+        const duplicateChecks = [{ metaLeadId: leadgenId }];
+
+        if (phone && phone !== "Not Provided") {
+          duplicateChecks.push({ phone });
+        }
+
+        if (email) {
+          duplicateChecks.push({ email });
+        }
+
         const existingLead = await Lead.findOne({
-          $or: [
-            { metaLeadId: leadgenId },
-            { phone },
-            ...(email ? [{ email }] : []),
-          ],
+          $or: duplicateChecks,
         });
 
-        if (!existingLead) {
-          await Lead.create({
-            clientName: fullName,
-            phone,
-            email,
-            source: "Meta Ads",
-            metaLeadId: leadgenId,
-            service: "Other",
-            formName: formId,
-          });
-        }
+        if (existingLead) continue;
 
         await Lead.create({
           clientName: fullName,
