@@ -19,6 +19,8 @@ const app = express();
 const allowedOrigins = [
   "http://localhost:3000",
   "http://localhost:3001",
+  "https://infriva-website.vercel.app",
+  "https://infriva-crm.vercel.app",
   process.env.WEBSITE_URL,
   process.env.CRM_URL,
 ].filter(Boolean);
