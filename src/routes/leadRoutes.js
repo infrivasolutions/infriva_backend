@@ -13,7 +13,12 @@ import { ROLES } from "../constants/roles.js";
 
 const leadRoutes = express.Router();
 
-leadRoutes.post("/", createLead);
+leadRoutes.post(
+  "/",
+  protect,
+  authorizeRoles(ROLES.ADMIN, ROLES.ADS_MANAGER),
+  createLead,
+);
 
 leadRoutes.get(
   "/",
@@ -28,6 +33,7 @@ leadRoutes.get(
   authorizeRoles(ROLES.ADMIN, ROLES.ADS_MANAGER, ROLES.DEVELOPER),
   getLeadById,
 );
+
 leadRoutes.post(
   "/:id/convert",
   protect,

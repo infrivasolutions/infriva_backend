@@ -42,6 +42,19 @@ const clientSchema = new mongoose.Schema(
     assignedTo: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
+      default: null,
+    },
+
+    assignedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
     },
 
     status: {
@@ -52,5 +65,7 @@ const clientSchema = new mongoose.Schema(
   },
   { timestamps: true },
 );
+
+clientSchema.index({ assignedTo: 1 });
 
 export default mongoose.model("Client", clientSchema);

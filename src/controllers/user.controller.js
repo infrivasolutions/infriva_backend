@@ -1,3 +1,4 @@
+import { ROLES } from "../constants/roles.js";
 import User from "../models/User.js";
 import bcrypt from "bcryptjs";
 
@@ -84,6 +85,29 @@ export const getUsers = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: error.message || "Internal Server Error",
+    });
+  }
+};
+
+export const getAssignableUsers = async (req, res) => {
+  try {
+    const users = await User.find({
+      role: { $in: [ROLES.DEVELOPER, ROLES.ADS_MANAGER] },
+      isActive: { $ne: false },
+    })
+      .select("name email role isActive")
+      .sort({ role: 1, name: 1 });
+
+    return res.status(200).json({
+      success: true,
+      data: users,
+    });
+  } catch (error) {
+    console.error("Get Assignable Users Error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
     });
   }
 };

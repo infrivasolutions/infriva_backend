@@ -2,6 +2,7 @@ import express from "express";
 import {
   createUser,
   deleteUser,
+  getAssignableUsers,
   getUserById,
   getUsers,
   updateUser,
@@ -12,14 +13,21 @@ import { ROLES } from "../constants/roles.js";
 
 const userRoutes = express.Router();
 
+userRoutes.post("/", protect, authorizeRoles(ROLES.ADMIN), createUser);
+
+userRoutes.get(
+  "/assignable",
+  protect,
+  authorizeRoles(ROLES.ADMIN, ROLES.ADS_MANAGER),
+  getAssignableUsers,
+);
+
 userRoutes.get(
   "/",
   protect,
   authorizeRoles(ROLES.ADMIN, ROLES.ADS_MANAGER),
   getUsers,
 );
-
-userRoutes.post("/", protect, authorizeRoles(ROLES.ADMIN), createUser);
 
 userRoutes.get(
   "/:id",

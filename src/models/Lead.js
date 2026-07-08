@@ -78,6 +78,17 @@ const leadSchema = new mongoose.Schema(
       ref: "User",
       default: null,
     },
+    assignedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
 
     priority: {
       type: String,
@@ -114,6 +125,7 @@ leadSchema.index({ source: 1 });
 leadSchema.index({ status: 1 });
 leadSchema.index({ priority: 1 });
 leadSchema.index({ followUpDate: 1 });
+leadSchema.index({ assignedTo: 1 });
 
 leadSchema.index(
   { metaLeadId: 1 },
