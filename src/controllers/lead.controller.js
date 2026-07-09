@@ -4,6 +4,7 @@ import Client from "../models/Client.js";
 import Lead from "../models/Lead.js";
 import User from "../models/User.js";
 import { ROLES } from "../constants/roles.js";
+import ExcelJS from "exceljs";
 
 const canManageAllLeads = (user) => {
   return [ROLES.ADMIN, ROLES.ADS_MANAGER].includes(user?.role);
@@ -722,6 +723,95 @@ export const convertLeadToClient = async (req, res) => {
     res.status(500).json({
       success: false,
       message: error.message || "Internal Server Error",
+    });
+  }
+};
+
+export const exportLeadsSheet = async (req, res) => {
+  try {
+    const query = {};
+
+    // Developer ko sirf assigned leads download karne do
+    if (req.user?.role === "developer") {
+      query.assignedTo = req.user._id;
+    }
+
+    // Optional filters
+    if (req.query.status) query.status = req.query.status;
+    if (req.query.priority) query.priority = req.query.priority;
+    if (req.query.leadSource) query.leadSource = req.query.leadSource;
+    if (req.query.serviceInterested) {
+      query.serviceInterested = req.query.serviceInterested;
+    }
+
+    const leads = await Lead.find(query)
+      .populate("assignedTo", "name email")
+      .populate("createdBy", "name email")
+      .sort({ createdAt: -1 });
+
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Leads");
+
+    worksheet.columns = [
+      { header: "Client Name", key: "clientName", width: 25 },
+      { header: "Phone", key: "phone", width: 18 },
+      { header: "Email", key: "email", width: 28 },
+      { header: "Business Name", key: "businessName", width: 25 },
+      { header: "City", key: "city", width: 18 },
+      { header: "Service Interested", key: "serviceInterested", width: 28 },
+      { header: "Budget", key: "budget", width: 18 },
+      { header: "Lead Source", key: "leadSource", width: 20 },
+      { header: "Status", key: "status", width: 18 },
+      { header: "Priority", key: "priority", width: 15 },
+      { header: "Assigned To", key: "assignedTo", width: 25 },
+      { header: "Follow Up Date", key: "followUpDate", width: 22 },
+      { header: "Created At", key: "createdAt", width: 22 },
+    ];
+
+    leads.forEach((lead) => {
+      worksheet.addRow({
+        clientName: lead.clientName || lead.name || "",
+        phone: lead.phone || "",
+        email: lead.email || "",
+        businessName: lead.businessName || lead.companyName || "",
+        city: lead.city || "",
+        serviceInterested: lead.serviceInterested || "",
+        budget: lead.budget || "",
+        leadSource: lead.leadSource || "",
+        status: lead.status || "",
+        priority: lead.priority || "",
+        assignedTo: lead.assignedTo?.name || "",
+        followUpDate: lead.followUpDate
+          ? new Date(lead.followUpDate).toLocaleDateString("en-IN")
+          : "",
+        createdAt: lead.createdAt
+          ? new Date(lead.createdAt).toLocaleDateString("en-IN")
+          : "",
+      });
+    });
+
+    worksheet.getRow(1).font = { bold: true };
+    worksheet.getRow(1).height = 22;
+
+    worksheet.views = [{ state: "frozen", ySplit: 1 }];
+
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    );
+
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=infriva-leads-${Date.now()}.xlsx`,
+    );
+
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (error) {
+    console.error("Export Leads Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to export leads",
     });
   }
 };

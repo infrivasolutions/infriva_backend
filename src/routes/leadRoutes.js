@@ -9,6 +9,7 @@ import {
   convertLeadToClient,
   importLeadsFromExcel,
   deleteLead,
+  exportLeadsSheet,
 } from "../controllers/lead.controller.js";
 import { protect } from "../middleware/auth.js";
 import { authorizeRoles } from "../middleware/role.js";
@@ -44,6 +45,8 @@ leadRoutes.post(
   upload.single("file"),
   importLeadsFromExcel,
 );
+
+leadRoutes.get("/export", protect, exportLeadsSheet);
 
 leadRoutes.get(
   "/:id",
