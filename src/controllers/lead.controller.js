@@ -768,22 +768,57 @@ export const exportLeadsSheet = async (req, res) => {
       { header: "Created At", key: "createdAt", width: 22 },
     ];
 
+    const cleanValue = (...values) => {
+      for (const value of values) {
+        if (
+          value !== undefined &&
+          value !== null &&
+          String(value).trim() !== "" &&
+          String(value).trim() !== "15"
+        ) {
+          return value;
+        }
+      }
+
+      return "";
+    };
     leads.forEach((lead) => {
       worksheet.addRow({
-        clientName: lead.clientName || lead.name || "",
-        phone: lead.phone || "",
-        email: lead.email || "",
-        businessName: lead.businessName || lead.companyName || "",
-        city: lead.city || "",
-        serviceInterested: lead.serviceInterested || "",
-        budget: lead.budget || "",
-        leadSource: lead.leadSource || "",
-        status: lead.status || "",
-        priority: lead.priority || "",
-        assignedTo: lead.assignedTo?.name || "",
+        clientName: cleanValue(lead.clientName, lead.name, lead.fullName),
+        phone: cleanValue(lead.phone),
+        email: cleanValue(lead.email),
+        businessName: cleanValue(
+          lead.businessName,
+          lead.companyName,
+          lead.company,
+        ),
+        city: cleanValue(lead.city),
+
+        serviceInterested: cleanValue(
+          lead.service,
+          lead.serviceInterested,
+          lead.serviceRequired,
+          lead.requirement,
+        ),
+
+        budget: cleanValue(lead.budget),
+
+        leadSource: cleanValue(
+          lead.source,
+          lead.leadSource,
+          lead.lead_source,
+          "Manual",
+        ),
+
+        status: cleanValue(lead.status, "New"),
+        priority: cleanValue(lead.priority, "Warm"),
+
+        assignedTo: cleanValue(lead.assignedTo?.name, lead.assignedTo?.email),
+
         followUpDate: lead.followUpDate
           ? new Date(lead.followUpDate).toLocaleDateString("en-IN")
           : "",
+
         createdAt: lead.createdAt
           ? new Date(lead.createdAt).toLocaleDateString("en-IN")
           : "",
