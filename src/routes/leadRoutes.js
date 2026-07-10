@@ -24,8 +24,9 @@ const upload = multer({
   },
 });
 
+leadRoutes.post("/", createLead);
 leadRoutes.post(
-  "/",
+  "/add",
   protect,
   authorizeRoles(ROLES.ADMIN, ROLES.ADS_MANAGER),
   createLead,
