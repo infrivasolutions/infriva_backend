@@ -47,7 +47,22 @@ const leadSchema = new mongoose.Schema(
       default: "Website",
     },
 
-    metaLeadId: {
+    metaPageId: {
+      type: String,
+      trim: true,
+    },
+
+    metaFormId: {
+      type: String,
+      trim: true,
+    },
+
+    metaAdId: {
+      type: String,
+      trim: true,
+    },
+
+    metaCampaignId: {
       type: String,
       trim: true,
     },
